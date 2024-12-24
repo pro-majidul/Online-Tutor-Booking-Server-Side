@@ -93,12 +93,12 @@ async function run() {
             res.send(result)
         })
 
-        // app.get('/tutorBooked', async (req, res) => {
-        //     const email = req.query.email;
-        //     const query = { email }
-        //     const result = await tutorBookCollecton.find(query).toArray();
-        //     res.send(result)
-        // })
+        app.get('/tutorBooked', async (req, res) => {
+            const email = req.query.email;
+            const query = { email : email }
+            const result = await tutorBookCollecton.find(query).toArray();
+            res.send(result)
+        })
 
 
         // Connect the client to the server	(optional starting in v4.7)
