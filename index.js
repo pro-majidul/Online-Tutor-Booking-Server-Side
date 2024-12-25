@@ -81,6 +81,14 @@ async function run() {
             res.send(result)
         })
 
+        app.delete('/tutors/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const data = await tutorialCollection.deleteOne(query);
+            res.send(data)
+        })
+
+
         app.patch('/tutors/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
