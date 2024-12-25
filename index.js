@@ -65,6 +65,25 @@ async function run() {
             res.send(result)
         })
 
+        app.patch('/tutors/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const update = {
+                $inc: {
+                    review: 1
+                }
+            }
+            const data = await tutorialCollection.updateOne(query, update);
+            res.send(data)
+        })
+
+        app.get('/tutor/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const result = await tutorialCollection.find(query).toArray()
+            res.send(result)
+        })
+
         app.post('/tutors', async (req, res) => {
             const data = req.body
             const result = await tutorialCollection.insertOne(data);
@@ -125,6 +144,22 @@ async function run() {
         app.post('/users', async (req, res) => {
             const data = req.body;
             const result = await UserCollection.insertOne(data)
+            res.send(result)
+        })
+
+        app.put('/users/:email', async (req, res) => {
+            const user = req.body;
+            const email = req.params.email
+            const query = { email: email }
+            const option = { upsert: true }
+            const updatedata = {
+                $set: {
+                    name: user.name,
+                    email: user.email,
+                    photo: user.photo
+                }
+            }
+            const result = await UserCollection.updateOne(query, updatedata, option);
             res.send(result)
         })
 
