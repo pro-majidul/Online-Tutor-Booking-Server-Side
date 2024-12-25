@@ -44,6 +44,7 @@ async function run() {
         const tutorialCollection = client.db('Tutor-Booking').collection('tutors')
         const languagelCollection = client.db('Tutor-Booking').collection('language');
         const tutorBookCollecton = client.db('Tutor-Booking').collection('tutorBooked')
+        const UserCollection = client.db('Tutor-Booking').collection('users')
 
         // Tutors APIs
         app.get('/tutors', async (req, res) => {
@@ -95,13 +96,18 @@ async function run() {
         })
 
         //Booked Tutors APIs
+
         app.post('/tutorBooked', async (req, res) => {
             const data = req.body;
-            const id = { tutorId: data.tutorId }
-            const isAxist = await tutorBookCollecton.findOne(id)
-            if (isAxist) {
-                return res.status(401).send('You already Booked This Data')
+            const query = {
+                tutorId: data.tutorId,
+                email: data.email
+
             }
+            const isAxist = await tutorBookCollecton.findOne(query);
+            if (isAxist) {
+                return res.status(401).send('Already Booked this Tutorial')
+            };
             const result = await tutorBookCollecton.insertOne(data);
             res.send(result)
         })
@@ -113,6 +119,10 @@ async function run() {
             res.send(result)
         })
 
+
+        // Useer APIs
+
+        
 
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
