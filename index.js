@@ -70,6 +70,19 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/tutorsCount', async (req, res) => {
+
+            const language = await languagelCollection.estimatedDocumentCount()
+            const reviewcount = await tutorialCollection.aggregate([
+                {
+                    $group: { _id: null, total: { $sum: "$review" } }
+                }
+            ]).toArray()
+            const result = await tutorialCollection.estimatedDocumentCount();
+
+            res.send({ totaltutorial: result, totalReview: reviewcount, totalLanguage: language })
+        })
+
         // Language APIs
         app.post('/language', async (req, res) => {
             const data = req.body
@@ -95,7 +108,7 @@ async function run() {
 
         app.get('/tutorBooked', async (req, res) => {
             const email = req.query.email;
-            const query = { email : email }
+            const query = { email: email }
             const result = await tutorBookCollecton.find(query).toArray();
             res.send(result)
         })
