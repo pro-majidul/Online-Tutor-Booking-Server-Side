@@ -64,6 +64,22 @@ async function run() {
             const result = await tutorialCollection.findOne(query)
             res.send(result)
         })
+        app.put('/tutors/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const data = req.body;
+            const option = { upsert: true }
+            const updateInfo = {
+                $set: {
+                    language: data.language,
+                    price: data.price,
+                    description: data.description,
+                    photo: data.photo
+                }
+            }
+            const result = await tutorialCollection.updateOne(query, updateInfo, option);
+            res.send(result)
+        })
 
         app.patch('/tutors/:id', async (req, res) => {
             const id = req.params.id;
@@ -100,7 +116,7 @@ async function run() {
             ]).toArray()
             const result = await tutorialCollection.estimatedDocumentCount();
             const users = await UserCollection.estimatedDocumentCount()
-            res.send({ totaltutorial: result, totalReview: reviewcount, totalLanguage: language , usercount : users })
+            res.send({ totaltutorial: result, totalReview: reviewcount, totalLanguage: language, usercount: users })
         })
 
         // Language APIs
