@@ -99,8 +99,8 @@ async function run() {
                 }
             ]).toArray()
             const result = await tutorialCollection.estimatedDocumentCount();
-
-            res.send({ totaltutorial: result, totalReview: reviewcount, totalLanguage: language })
+            const users = await UserCollection.estimatedDocumentCount()
+            res.send({ totaltutorial: result, totalReview: reviewcount, totalLanguage: language , usercount : users })
         })
 
         // Language APIs
