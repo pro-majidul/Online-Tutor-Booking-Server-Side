@@ -122,7 +122,18 @@ async function run() {
 
         // Useer APIs
 
-        
+        app.post('/users', async (req, res) => {
+            const data = req.body;
+            const result = await UserCollection.insertOne(data)
+            res.send(result)
+        })
+
+        app.get('/users', async (req, res) => {
+            const result = await UserCollection.find().toArray()
+            res.send(result)
+        })
+
+
 
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
