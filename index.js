@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 require('dotenv').config()
 const jwt = require('jsonwebtoken');
+const cookeParser = require('cookie-parser')
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
@@ -13,22 +14,24 @@ app.use(cors({
 }))
 // app.use(cors())
 app.use(express.json())
+app.use(cookeParser())
 
 // verification middleware
-const Varification = (req, res, next) => {
 
-    const token = req.cookies.token;
+const verification = (req, res, next) => {
+    const token = req.cookies?.token;
+    console.log(token);
     if (!token) {
-        return res.status(401).send('Unauthorize Access')
+        return res.status(401).send({message :'UnAuthorize Token '})
     }
     jwt.verify(token, process.env.Secure_Web_Token, (err, decoded) => {
         if (err) {
-            return res.status(403).send('Unauthorize Access')
+            return res.status(401).send({message : 'Token Not Match'})
         }
-        req.user = decoded;
+        req.userdec = decoded
+        console.log(decoded);
         next()
     })
-
 }
 
 
@@ -63,12 +66,13 @@ async function run() {
 
         app.post('/jwt', (req, res) => {
             const user = req.body;
-            const Token = jwt.sign(user, process.env.ACCESS_TOKEN_SECURE, { expiresIn: '10h' })
+            const Token = jwt.sign(user, process.env.Secure_Web_Token, { expiresIn: '10h' })
             res
                 .cookie('token', Token, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
-                    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+                    secure: false
+                    // secure: process.env.NODE_ENV === "production",
+                    // sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
                 })
                 .send({ success: true })
         })
@@ -76,8 +80,9 @@ async function run() {
         app.post('/logout', (req, res) => {
             res.clearCookie('token', {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: process.env.NODE_ENV === "production" ? "none" : "strict"
+                secure: false,
+                // secure: process.env.NODE_ENV === "production",
+                // sameSite: process.env.NODE_ENV === "production" ? "none" : "strict"
             })
                 .send({ success: true })
         })
@@ -98,7 +103,7 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/tutors/:id', async  (req, res) => {
+        app.get('/tutors/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await tutorialCollection.findOne(query)
@@ -141,15 +146,24 @@ async function run() {
             res.send(data)
         })
 
-        app.get('/tutor/:email', async (req, res) => {
+        app.get('/tutor/:email', verification, async (req, res) => {
             const email = req.params.email;
+            const userEmail = req.userdec.email;
+            if (userEmail != email) {
+                return res.status(403).send({ message: 'Forbidden  access' })
+            }
             const query = { email }
             const result = await tutorialCollection.find(query).toArray()
             res.send(result)
         })
 
-        app.post('/tutors', async (req, res) => {
+        app.post('/tutors',verification, async (req, res) => {
             const data = req.body
+            const email = data.email;
+            const userEmail = req.userdec.email;
+            if (userEmail != email) {
+                return res.status(403).send({ message: "Email is Not Matched" })
+            }
             const result = await tutorialCollection.insertOne(data);
             res.send(result)
         })
