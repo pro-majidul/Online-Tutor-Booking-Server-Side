@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 require('dotenv').config()
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
@@ -14,9 +15,20 @@ app.use(cors({
 app.use(express.json())
 
 // verification middleware
-const verification = (req, res, next) => {
-    console.log('varification on');
-    next()
+const Varification = (req, res, next) => {
+
+    const token = req.cookies.token;
+    if (!token) {
+        return res.status(401).send('Unauthorize Access')
+    }
+    jwt.verify(token, process.env.Secure_Web_Token, (err, decoded) => {
+        if (err) {
+            return res.status(403).send('Unauthorize Access')
+        }
+        req.user = decoded;
+        next()
+    })
+
 }
 
 
@@ -46,6 +58,34 @@ async function run() {
         const tutorBookCollecton = client.db('Tutor-Booking').collection('tutorBooked')
         const UserCollection = client.db('Tutor-Booking').collection('users')
 
+
+        // Auth related APIs
+
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const Token = jwt.sign(user, process.env.ACCESS_TOKEN_SECURE, { expiresIn: '10h' })
+            res
+                .cookie('token', Token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+                })
+                .send({ success: true })
+        })
+
+        app.post('/logout', (req, res) => {
+            res.clearCookie('token', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "strict"
+            })
+                .send({ success: true })
+        })
+
+
+
+
+
         // Tutors APIs
         app.get('/tutors', async (req, res) => {
             const lang = req.query.language;
@@ -58,7 +98,7 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/tutors/:id', async (req, res) => {
+        app.get('/tutors/:id', async  (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await tutorialCollection.findOne(query)
