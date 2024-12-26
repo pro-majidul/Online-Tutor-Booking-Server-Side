@@ -92,13 +92,30 @@ async function run() {
 
         // Tutors APIs
         app.get('/tutors', async (req, res) => {
-            const lang = req.query.language;
-            let query = {};
+            const lang = req.query.languages;
+            const search = req.query.search;
+            let query = {
+                language: {
+                    $regex: search, $options: 'i'
+                }
+            };
             if (lang) {
                 query = { language: lang }
             }
             const result = await tutorialCollection.find(query).toArray()
 
+            res.send(result)
+        })
+
+        app.get('/allTutors', async (req, res) => {
+            const search = req.query.search;
+            let query = {
+                language: {
+                    $regex: search, $options: 'i'
+                }
+
+            }
+            const result = await tutorialCollection.find(query).toArray();
             res.send(result)
         })
 
