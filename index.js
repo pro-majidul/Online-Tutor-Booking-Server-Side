@@ -22,14 +22,13 @@ const verification = (req, res, next) => {
     const token = req.cookies?.token;
     console.log(token);
     if (!token) {
-        return res.status(401).send({message :'UnAuthorize Token '})
+        return res.status(401).send({ message: 'UnAuthorize Token ' })
     }
     jwt.verify(token, process.env.Secure_Web_Token, (err, decoded) => {
         if (err) {
-            return res.status(401).send({message : 'Token Not Match'})
+            return res.status(401).send({ message: 'Token Not Match' })
         }
         req.userdec = decoded
-        console.log(decoded);
         next()
     })
 }
@@ -103,14 +102,26 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/tutors/:id', async (req, res) => {
+        app.get('/tutors/:id', verification, async (req, res) => {
             const id = req.params.id;
+            const email = req.query.email;
+            const userEmail = req.userdec.email;
+            if (userEmail != email) {
+                return res.status(403).send({ message: 'Forbidden' })
+            }
             const query = { _id: new ObjectId(id) }
             const result = await tutorialCollection.findOne(query)
             res.send(result)
         })
-        app.put('/tutors/:id', async (req, res) => {
+
+
+        app.put('/tutors/:id', verification, async (req, res) => {
             const id = req.params.id;
+            const email = req.query.email;
+            const userEmail = req.userdec.email;
+            if (userEmail != email) {
+                return res.status(403).send({ message: 'Unauthorized Access' })
+            }
             const query = { _id: new ObjectId(id) }
             const data = req.body;
             const option = { upsert: true }
@@ -126,16 +137,26 @@ async function run() {
             res.send(result)
         })
 
-        app.delete('/tutors/:id', async (req, res) => {
+        app.delete('/tutors/:id', verification, async (req, res) => {
             const id = req.params.id;
+            const email = req.query.email;
+            const userEmail = req.userdec.email;
+            if (userEmail != email) {
+                return res.status(403).send({ message: 'Forbidden' })
+            }
             const query = { _id: new ObjectId(id) }
             const data = await tutorialCollection.deleteOne(query);
             res.send(data)
         })
 
 
-        app.patch('/tutors/:id', async (req, res) => {
+        app.patch('/tutors/:id', verification, async (req, res) => {
             const id = req.params.id;
+            const email = req.query.email;
+            const userEmail = req.userdec.email;
+            if (userEmail != email) {
+                return res.status(403).send({ message: 'Forbidden' })
+            }
             const query = { _id: new ObjectId(id) }
             const update = {
                 $inc: {
@@ -157,7 +178,7 @@ async function run() {
             res.send(result)
         })
 
-        app.post('/tutors',verification, async (req, res) => {
+        app.post('/tutors', verification, async (req, res) => {
             const data = req.body
             const email = data.email;
             const userEmail = req.userdec.email;
@@ -194,8 +215,13 @@ async function run() {
 
         //Booked Tutors APIs
 
-        app.post('/tutorBooked', async (req, res) => {
+        app.post('/tutorBooked', verification, async (req, res) => {
             const data = req.body;
+            const email = req.body.email;
+            const userEmail = req.userdec.email;
+            if (userEmail != email) {
+                return res.status(403).send({ message: 'unauthorize Access' })
+            }
             const query = {
                 tutorId: data.tutorId,
                 email: data.email
@@ -203,14 +229,18 @@ async function run() {
             }
             const isAxist = await tutorBookCollecton.findOne(query);
             if (isAxist) {
-                return res.status(401).send('Already Booked this Tutorial')
+                return res.status(400).send('Already Booked this Tutorial')
             };
             const result = await tutorBookCollecton.insertOne(data);
             res.send(result)
         })
 
-        app.get('/tutorBooked', async (req, res) => {
+        app.get('/tutorBooked', verification, async (req, res) => {
             const email = req.query.email;
+            const userEmail = req.userdec.email;
+            if (userEmail != email) {
+                return res.status(403).send({ message: "Unauthorized Access" })
+            }
             const query = { email: email }
             const result = await tutorBookCollecton.find(query).toArray();
             res.send(result)
