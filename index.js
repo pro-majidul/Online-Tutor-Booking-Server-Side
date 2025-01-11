@@ -9,7 +9,7 @@ const app = express()
 
 // middleware
 app.use(cors({
-    origin: ['http://localhost:5174', 'http://localhost:5173','https://online-tutor-booking-pla-c7f2c.web.app','https://online-tutor-booking-pla-c7f2c.firebaseapp.com'],
+    origin: ['http://localhost:5174', 'http://localhost:5173','https://online-tutor-booking-pla-c7f2c.web.app','https://online-tutor-booking-pla-c7f2c.firebaseapp.com','https://online-tutor-booking-platform-client-side.surge.sh'],
     credentials: true,
 }))
 // app.use(cors())
