@@ -119,13 +119,13 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/tutors/:id', verification, async (req, res) => {
+        app.get('/tutors/:id',  async (req, res) => {
             const id = req.params.id;
-            const email = req.query.email;
-            const userEmail = req.userdec.email;
-            if (userEmail != email) {
-                return res.status(403).send({ message: 'Forbidden' })
-            }
+            // const email = req.query.email;
+            // const userEmail = req.userdec.email;
+            // if (userEmail != email) {
+            //     return res.status(403).send({ message: 'Forbidden' })
+            // }
             const query = { _id: new ObjectId(id) }
             const result = await tutorialCollection.findOne(query)
             res.send(result)
