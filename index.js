@@ -9,7 +9,7 @@ const app = express()
 
 // middleware
 app.use(cors({
-    origin: ['http://localhost:5174', 'http://localhost:5173','https://online-tutor-booking-pla-c7f2c.web.app','https://online-tutor-booking-pla-c7f2c.firebaseapp.com','https://online-tutor-booking-platform-client-side.surge.sh'],
+    origin: ['http://localhost:5174', 'http://localhost:5173', 'https://online-tutor-booking-pla-c7f2c.web.app', 'https://online-tutor-booking-pla-c7f2c.firebaseapp.com', 'https://online-tutor-booking-platform-client-side.surge.sh'],
     credentials: true,
 }))
 // app.use(cors())
@@ -109,17 +109,25 @@ async function run() {
 
         app.get('/allTutors', async (req, res) => {
             const search = req.query.search;
+            const sort = req.query.sort;
+            console.log(sort,'sort is ')
+            const sortOption = {}
+            if (sort === 'Descending') {
+                sortOption.price = -1;
+            } else {
+                sortOption.price = 1;
+            }
             let query = {
                 language: {
                     $regex: search, $options: 'i'
                 }
 
             }
-            const result = await tutorialCollection.find(query).toArray();
+            const result = await tutorialCollection.find(query).sort(sortOption).toArray();
             res.send(result)
         })
 
-        app.get('/tutors/:id',  async (req, res) => {
+        app.get('/tutors/:id', async (req, res) => {
             const id = req.params.id;
             // const email = req.query.email;
             // const userEmail = req.userdec.email;
